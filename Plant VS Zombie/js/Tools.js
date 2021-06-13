@@ -1,5 +1,4 @@
 
-
 function Shovel(x,y,stage){
     this.bitmap = new createjs.Bitmap("image/adventure/Shovel.png");
     this.bitmap.x = x;
@@ -36,7 +35,8 @@ function Shovel(x,y,stage){
             _this.stage.parent.addEventListener("stagemouseup",()=>{
                 if(plantId!=-1){
                     _this.stage.removeChild(_this.stage.gameMap[line][plantId].plant.sprite,_this.stage.gameMap[line][plantId].plant.shadow);
-                   clearTimeout(_this.stage.gameMap[line][plantId].plant.timer);
+                   if(_this.stage.gameMap[line][plantId].plant.timerType) clearTimeout(_this.stage.gameMap[line][plantId].plant.timer);
+                   else clearInterval(_this.stage.gameMap[line][plantId].plant.timer);
                    _this.stage.gameMap[line][plantId].hasPlant = false;
                    _this.stage.gameMap[line][plantId].plant = null;
                 }
@@ -127,7 +127,9 @@ function Card(image,plant,plantbitmap,price,CoolingTime){
                     _this.stage.gameMap[_this.line][_this.plantId].plant = _this.Plant; 
                     _this.stage.gameMap[_this.line][_this.plantId].plant.auto();
                     _this.stage.gameMap[_this.line][_this.plantId].hasPlant = true;
-                    _this.stage.addChild(_this.Plant.shadow,_this.Plant.sprite);
+                    _this.stage.addChild(_this.stage.gameMap[_this.line][_this.plantId].plant.shadow,_this.stage.gameMap[_this.line][_this.plantId].plant.sprite);
+                    _this.stage.setChildIndex(_this.stage.gameMap[_this.line][_this.plantId].plant.shadow,1);
+                    _this.stage.setChildIndex(_this.stage.gameMap[_this.line][_this.plantId].plant.sprite,2);
                     _this.stage.removeChild(_this.virtual,_this.PlantBitmap);
                     _this.stage.sun -= _this.price;
                     _this.Cooling(temp);

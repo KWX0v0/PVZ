@@ -61,7 +61,7 @@ function Index(){
                 _this.addChild(highlight);
                 var timer = setInterval(()=>{
                     highlight.alpha = highlight.alpha==0?1:0;
-                },200)
+                },100)
                 
                 ZombieHand.gotoAndPlay("move")
                 setTimeout(() => {ZombieHand.stop()},1000);

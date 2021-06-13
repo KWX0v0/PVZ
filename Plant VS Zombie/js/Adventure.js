@@ -1,15 +1,14 @@
 function Adventure(){
     var background = new createjs.Bitmap("image/adventure/background1.jpg");
     var cars = new Array();
-    this.sun = 100;
+    this.sun = 50;
     this.Cards = new Array();
     var sunNum = null;
     background.x = 0;
     this.gameMap = new Array();
+    this.ZombieList = new Array();
     this.ClickEnable = false;
     this.sunCount = 0;
-    this.zombieY = [50,140,250,340,440];
-    this.zombieList = new Array();
     this.sunFresh = Math.ceil(Math.random()*274)+425;
     this.addChild(background);
     let _this = this;
@@ -33,10 +32,22 @@ function Adventure(){
         }
         
         for(var i=0;i<5;i++){
-            var car = new createjs.Bitmap("image/adventure/LawnMower.gif");
+            var car = new createjs.Sprite(new createjs.SpriteSheet({
+                    "images":["image/adventure/LawnMower.png"],
+                    "frames":{
+                        height:80,
+                        width:80,
+                        count:17
+                    },
+                    "animations":{
+                        stop:0,
+                        move:[0,16,,0.4]
+                    }
+                }),"stop");
             cars.push(car);
             cars[i].x = -30;
-            cars[i].y = i*100+120;
+            cars[i].y = i*95+110;
+            cars[i].isHit = false;
             _this.addChild(cars[i]);
         }
         var seedBank = new createjs.Bitmap("image/adventure/SeedBank.png");
@@ -55,8 +66,7 @@ function Adventure(){
         for (let i = 0; i < _this.Cards.length; i++) {
             _this.addChild(_this.Cards[i].CardBitmap);
         }
-        
-        var PrepareSprite = new createjs.SpriteSheet({
+        var prepare =  new createjs.Sprite( new createjs.SpriteSheet({
             "images":["image/adventure/PrepareGrowPlants.png"],
             "frames":{
                 "height":108,
@@ -66,19 +76,23 @@ function Adventure(){
             "animations":{
                 "move":[0,2,,0.02]
             }
-        });
-        var prepare =  new createjs.Sprite(PrepareSprite,"move");
+        }),"move");
         prepare.x = 280;
         prepare.y = 250;
         _this.addChild(prepare);
         setInterval(()=>{
-            sunCheck(_this);
+            allCheck(_this);
         },100)
         setTimeout(()=>{
             _this.ClickEnable = true;
             _this.removeChild(prepare)
             _this.addChild(shovelBank,shovel.bitmap);
             DropSunlight();
+            var zombie = new normalZombie();
+            zombie.init(700,4,_this);
+            zombie.auto();
+            _this.ZombieList.push(zombie)
+            _this.addChild(_this.ZombieList[0].sprite);
         },2500)
        
     }
@@ -99,7 +113,8 @@ function Adventure(){
     }
 
 
-    function sunCheck(_this){
+    function allCheck(){
+        //sun-check
         if(sunNum!=null){
             sunNum.text = _this.sun;
             if(_this.sun>=10&&_this.sun<100) sunNum.x = 28;
@@ -117,6 +132,46 @@ function Adventure(){
         }
         var B = Math.ceil(Math.random()*425);
         _this.sunFresh = _this.sunCount*10+425>950?950+B:_this.sunCount*10+425+B;
+        //zombie-check
+        for (var i = 0; i < _this.ZombieList.length; i++) {
+            if(_this.ZombieList[i].life<=0){
+                _this.removeChild(_this.ZombieList[i].sprite);
+                _this.ZombieList.splice(i,1);
+            }
+            if(_this.ZombieList[i].sprite.x+_this.ZombieList[i].hitX<=cars[_this.ZombieList[i].line].x+80){
+                cars[_this.ZombieList[i].line].isHit = true;
+                _this.removeChild(_this.ZombieList[i].sprite);
+                clearInterval(_this.ZombieList[i].timer);
+            }
+            if(_this.ZombieList[i].sprite.x+_this.ZombieList[i].hitX<=0){
+
+            }
+        }
+        //car-check
+        for (var i = 0; i < cars.length; i++) {
+            if(cars[i].isHit){
+                cars[i].gotoAndPlay("move");
+                cars[i].x+=30;
+            }
+            if(cars[i].x>=810){
+                _this.removeChild(cars[i]);
+            }
+            
+        }
+        //plant-check
+        for (var i = 0; i < _this.gameMap.length; i++) {
+            for(var j=0;j<_this.gameMap[i].length;j++){
+                if(!_this.gameMap[i][j].hasPlant) continue;
+                if(_this.gameMap[i][j].plant.life<=0){
+                    _this.removeChild(_this.gameMap[i][j].plant.sprite,_this.gameMap[i][j].plant.shadow);
+                    _this.gameMap[i][j].hasPlant = false;
+                    if(_this.gameMap[i][j].plant.timerType) clearTimeout(_this.gameMap[i][j].plant.timer);
+                    else clearInterval(_this.gameMap[i][j].plant.timer);
+                    _this.gameMap[i][j].plant = null;
+                }
+            }
+            
+        }
     }
 }
 Adventure.prototype = new createjs.Container();

@@ -9,6 +9,7 @@ function Plant(images,height,width,count,actions,life){
         },
         "animations":actions
     });
+    this.timerType = 0;//0为Interval 1为Timeout
     this.sprite =  new createjs.Sprite(plantSprite,"move");
     this.shadow = new createjs.Bitmap("image/Plants/plantshadow.png");
     let _this = this;
@@ -36,6 +37,7 @@ function Sunflower(){
     this.ShadowX = 8;
     this.ShadowY = 25;
     this.timer = null;
+    this.timerType = 1;
     this.ProduceTime = Math.ceil(Math.random()*5)+5;//第一次5～10秒，之后每个23~25秒
     let _this = this;
     this.auto = function(){
@@ -68,17 +70,17 @@ function Peashooter(){
     this.width = 80;
     var count = 68;
     var actions = {"move":[43,67,,0.4],"shoot":[0,42,,0.5]};
-    this.plant(src,this.height,this.width,count,actions);
+    this.plant(src,this.height,this.width,count,actions,250);
     this.offsetX = -5;
     this.offsetY = -5;
     this.ShadowX = 8
     this.ShadowY = 30;
     let _this = this;
     this.auto = function(){
-        _this.sprite.gotoAndPlay("shoot");
-        setInterval(()=>{
+        // _this.sprite.gotoAndPlay("shoot");
+        // _this.timer = setInterval(()=>{
            
-        },1400)
+        // },1400)
     }
 }
 
