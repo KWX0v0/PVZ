@@ -1,4 +1,4 @@
-function  Zombie(images,height,width,count,actions){
+function  Zombie(images,height,width,count,actions,life){
     this.stage = null;
     var ZombieSprite = new createjs.SpriteSheet({
         "images":images,
@@ -14,6 +14,7 @@ function  Zombie(images,height,width,count,actions){
     this.offsetX = 0;
     this.offsetY = 0;
     this.line = 0;
+    this.life = life;
     this.sprite =  new createjs.Sprite(ZombieSprite);
     let _this = this;
     var  zombieY = [50,140,250,340,440];
@@ -35,12 +36,12 @@ function normalZombie(){
     this.hitX = 100;
     //NH ----  NoHead
     var actions = {"stand":[0,43,,0.3],"move1":[44,90,,0.3],"move2":[91,137,,0.3],"eat":[138,177,,0.3],"die":[178,210,,0.3],"NH-move1":[211,257,,0.3],"NH-move2":[258,304,,0.3],"NH-eat":[305,344,,0.3]};
-    this.zombie(img,this.height,this.width,count,actions);
+    this.zombie(img,this.height,this.width,count,actions,270);
     let _this = this;
     this.auto = function(){
         _this.sprite.gotoAndPlay("move1");
         _this.timer = setInterval(()=>{
-            if(!_this.IsEating)_this.sprite.x -= 1;
+            if(!_this.IsEating)_this.sprite.x -= 1;//0.9
             var plantId = -1;
             for(var i=0;i<_this.stage.gameMap[_this.line].length;i++){
                 if(!_this.stage.gameMap[_this.line][i].hasPlant) continue;

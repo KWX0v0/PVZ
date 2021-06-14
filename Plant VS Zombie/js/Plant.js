@@ -9,7 +9,6 @@ function Plant(images,height,width,count,actions,life){
         },
         "animations":actions
     });
-    this.timerType = 0;//0为Interval 1为Timeout
     this.sprite =  new createjs.Sprite(plantSprite,"move");
     this.shadow = new createjs.Bitmap("image/Plants/plantshadow.png");
     let _this = this;
@@ -18,6 +17,7 @@ function Plant(images,height,width,count,actions,life){
     this.ShadowX = 0;
     this.ShadowY = 0;
     this.life =  life;
+    this.line = 0;
     this.init = function(x,y,stage){
         _this.sprite.x = x+_this.offsetX;
         _this.sprite.y = y+_this.offsetY;
@@ -36,12 +36,11 @@ function Sunflower(){
     this.plant(src,this.height,this.width,count,actions,250);
     this.ShadowX = 8;
     this.ShadowY = 25;
-    this.timer = null;
-    this.timerType = 1;
+    var timer = null;
     this.ProduceTime = Math.ceil(Math.random()*5)+5;//第一次5～10秒，之后每个23~25秒
     let _this = this;
     this.auto = function(){
-            _this.timer = setTimeout(()=>{
+            timer = setTimeout(()=>{
                 var sunlight = new SunLight();
                 sunlight.init(_this.sprite.x+10,_this.sprite.y+10,_this.stage);
                 sunlight.auto();
@@ -61,7 +60,9 @@ function Sunflower(){
                 _this.auto();
             },_this.ProduceTime*1000);
         }
-        
+    this.stop = function(){
+        clearTimeout(timer);
+    }
 }
 function Peashooter(){
     this.plant = Plant;
@@ -69,18 +70,46 @@ function Peashooter(){
     this.height = 80;
     this.width = 80;
     var count = 68;
-    var actions = {"move":[43,67,,0.4],"shoot":[0,42,,0.5]};
+    var actions = {"move":[43,67,,0.4],"shoot":[0,42,,0.51]};
     this.plant(src,this.height,this.width,count,actions,250);
     this.offsetX = -5;
     this.offsetY = -5;
     this.ShadowX = 8
     this.ShadowY = 30;
+    var isShooting = false;
+    var ShootComplete = true;
     let _this = this;
+    var timer1 = null;
+    var timer2 = null;
     this.auto = function(){
-        // _this.sprite.gotoAndPlay("shoot");
-        // _this.timer = setInterval(()=>{
-           
-        // },1400)
+        timer1 = setInterval(() => {
+            var hasZombie = false;
+            for(var i=0;i<_this.stage.ZombieList.length;i++){
+                if(_this.stage.ZombieList[i].line == _this.line){
+                    hasZombie = true;
+                }
+            } 
+            if(hasZombie&&!isShooting){
+                _this.sprite.gotoAndPlay("shoot");
+                isShooting = true;
+            }
+            if(isShooting&&ShootComplete){
+                ShootComplete = false;
+                timer2 = setTimeout(() => {
+                    var bullet = new PeaBullet(_this.sprite.x+_this.width,_this.sprite.y+20,_this.stage,_this.line);
+                    ShootComplete = true;
+                }, 1400);
+            }
+            if(!hasZombie&&isShooting){
+                isShooting = false;
+                _this.sprite.gotoAndPlay("move");
+                clearTimeout(timer2);
+            }
+        }, 100);
+    }
+    this.stop = function(){
+        clearInterval(timer1);
+        clearTimeout(timer2)
     }
 }
 

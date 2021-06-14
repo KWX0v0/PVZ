@@ -1,7 +1,7 @@
 function Adventure(){
     var background = new createjs.Bitmap("image/adventure/background1.jpg");
     var cars = new Array();
-    this.sun = 50;
+    this.sun = 500;
     this.Cards = new Array();
     var sunNum = null;
     background.x = 0;
@@ -134,17 +134,46 @@ function Adventure(){
         _this.sunFresh = _this.sunCount*10+425>950?950+B:_this.sunCount*10+425+B;
         //zombie-check
         for (var i = 0; i < _this.ZombieList.length; i++) {
-            if(_this.ZombieList[i].life<=0){
-                _this.removeChild(_this.ZombieList[i].sprite);
-                _this.ZombieList.splice(i,1);
+            if(_this.ZombieList[i].sprite.x+_this.ZombieList[i].hitX<=0){
+        
             }
-            if(_this.ZombieList[i].sprite.x+_this.ZombieList[i].hitX<=cars[_this.ZombieList[i].line].x+80){
+            if(_this.ZombieList[i].life<=0){
+                var temp = _this.getChildIndex(_this.ZombieList[i].sprite);
+                clearInterval(_this.ZombieList[i].timer);
+                _this.ZombieList[i].sprite.gotoAndPlay("die");
+                _this.ZombieList.splice(i,1);
+                setTimeout(() => {
+                    _this.getChildAt(temp).stop();
+                    setTimeout(() => {
+                        _this.removeChildAt(temp);
+                    }, 1000);
+                }, 1700);
+            }
+            else if(_this.ZombieList[i].sprite.x+_this.ZombieList[i].hitX<=cars[_this.ZombieList[i].line].x+80){
                 cars[_this.ZombieList[i].line].isHit = true;
                 _this.removeChild(_this.ZombieList[i].sprite);
+                var LawnMowered = new createjs.Sprite(new createjs.SpriteSheet({
+                    images:["image/adventure/LawnMoweredZombie.png"],
+                    frames:{
+                        height:140,
+                        width:550,
+                        count:8
+                    },
+                    animations:{
+                        crash:[0,7,,0.13]
+                    }
+                }),"crash");
+                LawnMowered.x = _this.ZombieList[i].sprite.x+_this.ZombieList[i].hitX-200;
+                LawnMowered.y = _this.ZombieList[i].sprite.y;
+                _this.addChild(LawnMowered);
+                setTimeout(()=>{
+                    LawnMowered.stop();
+                    setTimeout(()=>{
+                        _this.removeChild(LawnMowered);
+                    },500)
+                },1000)
                 clearInterval(_this.ZombieList[i].timer);
-            }
-            if(_this.ZombieList[i].sprite.x+_this.ZombieList[i].hitX<=0){
-
+                _this.ZombieList.splice(i,1);
             }
         }
         //car-check
@@ -165,8 +194,7 @@ function Adventure(){
                 if(_this.gameMap[i][j].plant.life<=0){
                     _this.removeChild(_this.gameMap[i][j].plant.sprite,_this.gameMap[i][j].plant.shadow);
                     _this.gameMap[i][j].hasPlant = false;
-                    if(_this.gameMap[i][j].plant.timerType) clearTimeout(_this.gameMap[i][j].plant.timer);
-                    else clearInterval(_this.gameMap[i][j].plant.timer);
+                    _this.gameMap[i][j].plant.stop();
                     _this.gameMap[i][j].plant = null;
                 }
             }

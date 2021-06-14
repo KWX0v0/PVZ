@@ -35,8 +35,7 @@ function Shovel(x,y,stage){
             _this.stage.parent.addEventListener("stagemouseup",()=>{
                 if(plantId!=-1){
                     _this.stage.removeChild(_this.stage.gameMap[line][plantId].plant.sprite,_this.stage.gameMap[line][plantId].plant.shadow);
-                   if(_this.stage.gameMap[line][plantId].plant.timerType) clearTimeout(_this.stage.gameMap[line][plantId].plant.timer);
-                   else clearInterval(_this.stage.gameMap[line][plantId].plant.timer);
+                    _this.stage.gameMap[line][plantId].plant.stop();
                    _this.stage.gameMap[line][plantId].hasPlant = false;
                    _this.stage.gameMap[line][plantId].plant = null;
                 }
@@ -68,8 +67,8 @@ function Card(image,plant,plantbitmap,price,CoolingTime){
     this.virtual = new createjs.Bitmap(plantbitmap);
     this.virtual.alpha = 0;
     this.cover = new createjs.Shape(); 
-    this.plantId = -1;
-    this.line = 0;    
+    var plantId = -1;
+    var line = 0;    
     var hitArea = new createjs.Shape(); 
     hitArea.graphics.beginFill("#000").drawRect(0,0,50,70);
     this.CardBitmap.hitArea = hitArea;
@@ -111,25 +110,26 @@ function Card(image,plant,plantbitmap,price,CoolingTime){
                                _this.virtual.alpha = 0.5;
                                _this.virtual.x = _this.stage.gameMap[i][j].graphics.command.x;
                                _this.virtual.y = _this.stage.gameMap[i][j].graphics.command.y;
-                               _this.line = i;
-                               _this.plantId = j;
+                               line = i;
+                               plantId = j;
                        }
                    }
                 }
-                if(_this.plantId == -1){
+                if(plantId == -1){
                     _this.virtual.alpha = 0;
                 }
             })
             _this.stage.parent.addEventListener("stagemouseup",(event)=>{
-                if(_this.plantId !=-1){
+                if(plantId !=-1){
                     _this.Plant = new plant;
-                    _this.Plant.init(_this.stage.gameMap[_this.line][_this.plantId].graphics.command.x,_this.stage.gameMap[_this.line][_this.plantId].graphics.command.y,_this.stage);
-                    _this.stage.gameMap[_this.line][_this.plantId].plant = _this.Plant; 
-                    _this.stage.gameMap[_this.line][_this.plantId].plant.auto();
-                    _this.stage.gameMap[_this.line][_this.plantId].hasPlant = true;
-                    _this.stage.addChild(_this.stage.gameMap[_this.line][_this.plantId].plant.shadow,_this.stage.gameMap[_this.line][_this.plantId].plant.sprite);
-                    _this.stage.setChildIndex(_this.stage.gameMap[_this.line][_this.plantId].plant.shadow,1);
-                    _this.stage.setChildIndex(_this.stage.gameMap[_this.line][_this.plantId].plant.sprite,2);
+                    _this.Plant.init(_this.stage.gameMap[line][plantId].graphics.command.x,_this.stage.gameMap[line][plantId].graphics.command.y,_this.stage);
+                    _this.stage.gameMap[line][plantId].plant = _this.Plant; 
+                    _this.stage.gameMap[line][plantId].plant.line = line;
+                    _this.stage.gameMap[line][plantId].plant.auto();
+                    _this.stage.gameMap[line][plantId].hasPlant = true;
+                    _this.stage.addChild(_this.stage.gameMap[line][plantId].plant.shadow,_this.stage.gameMap[line][plantId].plant.sprite);
+                    _this.stage.setChildIndex(_this.stage.gameMap[line][plantId].plant.shadow,1);
+                    _this.stage.setChildIndex(_this.stage.gameMap[line][plantId].plant.sprite,2);
                     _this.stage.removeChild(_this.virtual,_this.PlantBitmap);
                     _this.stage.sun -= _this.price;
                     _this.Cooling(temp);

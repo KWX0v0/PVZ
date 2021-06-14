@@ -42,7 +42,7 @@ function Index(){
     let _this = this;
     for(var i=0;i<BtnArr.length;i++){
         var temp = new createjs.Shape();
-        temp.graphics.beginFill("#000").drawRect(0,0,290,120);
+        temp.graphics.beginFill("#000").drawRect(0,15,290,100);
         BtnArr[i].hitArea = temp;
         BtnArr[i].addEventListener("click",(e)=>{
             if(_this.clickEnable) Btnclick(e.target.id-5);
@@ -62,7 +62,6 @@ function Index(){
                 var timer = setInterval(()=>{
                     highlight.alpha = highlight.alpha==0?1:0;
                 },100)
-                
                 ZombieHand.gotoAndPlay("move")
                 setTimeout(() => {ZombieHand.stop()},1000);
                 setTimeout(()=>{
