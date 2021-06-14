@@ -1,14 +1,19 @@
 function Adventure(){
     var background = new createjs.Bitmap("image/adventure/background1.jpg");
+    var seedBank = new createjs.Bitmap("image/adventure/SeedBank.png");
+    var shovelBank = new createjs.Bitmap("image/adventure/ShovelBank.png");
+    var shovel = new Shovel(440,-5,this);
     var cars = new Array();
-    this.sun = 500;
+    this.sun = 50;
     this.Cards = new Array();
     var sunNum = null;
-    background.x = 0;
     this.gameMap = new Array();
     this.ZombieList = new Array();
     this.ClickEnable = false;
     this.sunCount = 0;
+    this.checkTimer=null;
+    this.zombieTimer = null;
+    this.sunTimer = null;
     this.sunFresh = Math.ceil(Math.random()*274)+425;
     this.addChild(background);
     let _this = this;
@@ -50,10 +55,8 @@ function Adventure(){
             cars[i].isHit = false;
             _this.addChild(cars[i]);
         }
-        var seedBank = new createjs.Bitmap("image/adventure/SeedBank.png");
-        var shovelBank = new createjs.Bitmap("image/adventure/ShovelBank.png");
+       
         shovelBank.x = 446;
-        shovel = new Shovel(440,-5,_this);
         sunNum = new createjs.Text(_this.sun, "20px Arial", "#000");
         sunNum.x = 34;
         sunNum.y = 63;
@@ -80,7 +83,7 @@ function Adventure(){
         prepare.x = 280;
         prepare.y = 250;
         _this.addChild(prepare);
-        setInterval(()=>{
+        _this.checkTimer = setInterval(()=>{
             allCheck(_this);
         },100)
         setTimeout(()=>{
@@ -88,17 +91,15 @@ function Adventure(){
             _this.removeChild(prepare)
             _this.addChild(shovelBank,shovel.bitmap);
             DropSunlight();
-            var zombie = new normalZombie();
-            zombie.init(700,4,_this);
-            zombie.auto();
-            _this.ZombieList.push(zombie)
-            _this.addChild(_this.ZombieList[0].sprite);
+            setTimeout(() => {
+                ZombieComing();
+            }, 5000);
         },2500)
        
     }
     
     function DropSunlight(){
-        setTimeout(()=>{
+        _this.sunTimer = setTimeout(()=>{
             var sunX = Math.ceil(Math.random()*500)+50;
             var sunlight = new SunLight();
             sunlight.init(sunX,0,_this);
@@ -111,8 +112,43 @@ function Adventure(){
             DropSunlight();
         },_this.sunFresh*10)
     }
+    
+
+    function stopAll(){
+        clearInterval(_this.checkTimer);
+        clearTimeout(_this.zombieTimer);
+        clearTimeout(_this.sunTimer);
+        for (var i = 0; i < _this.gameMap.length; i++) {
+            for (var j = 0; j < _this.gameMap[i].length; j++) {
+                if(_this.gameMap[i][j].hasPlant) _this.gameMap[i][j].plant.stop();
+            }
+        }
+        for(var i=0;i<_this.ZombieList.length;i++){
+            _this.ZombieList[i].stop();
+        }
+    }
 
 
+    var comingTime = 10;
+    var zombiecount = 1;
+    function ZombieComing(){
+        _this.zombieTimer = setTimeout(() => {
+            for(var i=0;i<zombiecount;i++){
+                var zombie = new normalZombie();
+                var line = (Math.ceil(Math.random()*i)+100)%5;
+                var ZX = (Math.ceil(Math.random()*3)+2)*30+800; 
+                zombie.init(ZX,line,_this);
+                zombie.type = Math.ceil(Math.random()*2);
+                _this.ZombieList.push(zombie);
+                _this.ZombieList[_this.ZombieList.length-1].auto();
+                _this.addChild(_this.ZombieList[_this.ZombieList.length-1].sprite);
+            }
+            comingTime = Math.ceil(Math.random()*10)+30;
+            zombiecount = Math.ceil(Math.random()*8)+2;
+            ZombieComing();
+        },comingTime*1000);
+    }
+    
     function allCheck(){
         //sun-check
         if(sunNum!=null){
@@ -134,24 +170,37 @@ function Adventure(){
         _this.sunFresh = _this.sunCount*10+425>950?950+B:_this.sunCount*10+425+B;
         //zombie-check
         for (var i = 0; i < _this.ZombieList.length; i++) {
-            if(_this.ZombieList[i].sprite.x+_this.ZombieList[i].hitX<=0){
-        
-            }
-            if(_this.ZombieList[i].life<=0){
-                var temp = _this.getChildIndex(_this.ZombieList[i].sprite);
-                clearInterval(_this.ZombieList[i].timer);
-                _this.ZombieList[i].sprite.gotoAndPlay("die");
+            if(!_this.ZombieList[i].isLive){
                 _this.ZombieList.splice(i,1);
-                setTimeout(() => {
-                    _this.getChildAt(temp).stop();
-                    setTimeout(() => {
-                        _this.removeChildAt(temp);
-                    }, 1000);
-                }, 1700);
+                i--;
+                continue;
             }
-            else if(_this.ZombieList[i].sprite.x+_this.ZombieList[i].hitX<=cars[_this.ZombieList[i].line].x+80){
+            if(_this.ZombieList[i].sprite.x+_this.ZombieList[i].hitX<=0){
+                stopAll();
+                for(var j=0;j<_this.Cards.length;j++){
+                    _this.removeChild(_this.Cards[j].CardBitmap);
+                }
+                _this.removeChild(shovelBank,seedBank,shovel.bitmap,sunNum);
+                _this.ZombieList[i].sprite.gotoAndPlay("move"+_this.ZombieList[i].type);
+                createjs.Tween.get(_this).to({x:215},1000);
+                createjs.Tween.get(_this.ZombieList[i].sprite).wait(1000).to({x:-_this.ZombieList[i].hitX-150,y:260,alpha:0},1000);
+                var zombieWon = new createjs.Bitmap("image/ZombiesWon.png");
+                zombieWon.scaleX = 0.1;//564X468
+                zombieWon.scaleY = 0.1;
+                zombieWon.x = 167;
+                zombieWon.y = 277;
+                setTimeout(()=>{_this.addChild(zombieWon)},2000);
+                createjs.Tween.get(zombieWon).wait(2000).to({x:-87,y:66,scaleX:1,scaleY:1},2000);
+                setTimeout(()=>{
+                    _this.parent.addChild(new Index());
+                    _this.parent.removeChild(_this);
+                },6000)
+                break;
+            }
+            if(cars[_this.ZombieList[i].line]&&_this.ZombieList[i].sprite.x+_this.ZombieList[i].hitX<=cars[_this.ZombieList[i].line].x+80&&_this.ZombieList[i].sprite.x+_this.ZombieList[i].hitX<=750){
                 cars[_this.ZombieList[i].line].isHit = true;
                 _this.removeChild(_this.ZombieList[i].sprite);
+                _this.ZombieList[i].stop();
                 var LawnMowered = new createjs.Sprite(new createjs.SpriteSheet({
                     images:["image/adventure/LawnMoweredZombie.png"],
                     frames:{
@@ -166,24 +215,26 @@ function Adventure(){
                 LawnMowered.x = _this.ZombieList[i].sprite.x+_this.ZombieList[i].hitX-200;
                 LawnMowered.y = _this.ZombieList[i].sprite.y;
                 _this.addChild(LawnMowered);
+                _this.ZombieList.splice(i,1);
+                i--;
                 setTimeout(()=>{
                     LawnMowered.stop();
                     setTimeout(()=>{
                         _this.removeChild(LawnMowered);
                     },500)
                 },1000)
-                clearInterval(_this.ZombieList[i].timer);
-                _this.ZombieList.splice(i,1);
             }
         }
         //car-check
         for (var i = 0; i < cars.length; i++) {
+            if(!cars[i]) continue;
             if(cars[i].isHit){
                 cars[i].gotoAndPlay("move");
                 cars[i].x+=30;
             }
-            if(cars[i].x>=810){
+            if(cars[i].x>=830){
                 _this.removeChild(cars[i]);
+                cars[i] = null;
             }
             
         }

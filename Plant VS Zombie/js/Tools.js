@@ -102,7 +102,7 @@ function Card(image,plant,plantbitmap,price,CoolingTime){
                 _this.PlantBitmap.x = e.stageX-_this.Plant.width/2;
                 _this.PlantBitmap.y = e.stageY-_this.Plant.height;
                 _this.stage.addChild(_this.PlantBitmap);
-                _this.plantId = -1;
+                plantId = -1;
                for(var i=0;i<_this.stage.gameMap.length;i++){
                    for (let j = 0; j < _this.stage.gameMap[i].length; j++) {
                        if(_this.stage.gameMap[i][j].hasPlant) continue;
