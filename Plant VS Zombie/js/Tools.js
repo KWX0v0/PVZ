@@ -14,7 +14,7 @@ function Shovel(x,y,stage){
         if(_this.stage.ClickEnable){
             _this.stage.ClickEnable = false;
             //使铲子的层级为最高层
-            _this.stage.removeChild(_this.bitmap);
+            _this.stage.containers[0].removeChild(_this.bitmap);
             _this.stage.addChild(_this.bitmap);
             _this.stage.parent.addEventListener("stagemousemove",(e)=>{
                 _this.bitmap.x = e.stageX-15;
@@ -34,7 +34,7 @@ function Shovel(x,y,stage){
             })
             _this.stage.parent.addEventListener("stagemouseup",()=>{
                 if(plantId!=-1){
-                    _this.stage.removeChild(_this.stage.gameMap[line][plantId].plant.sprite,_this.stage.gameMap[line][plantId].plant.shadow);
+                    _this.stage.containers[line+1].removeChild(_this.stage.gameMap[line][plantId].plant.sprite,_this.stage.gameMap[line][plantId].plant.shadow);
                     _this.stage.gameMap[line][plantId].plant.stop();
                    _this.stage.gameMap[line][plantId].hasPlant = false;
                    _this.stage.gameMap[line][plantId].plant = null;
@@ -43,6 +43,8 @@ function Shovel(x,y,stage){
                     _this.stage.ClickEnable = true;
                     _this.bitmap.x = x;
                     _this.bitmap.y = y;
+                    _this.stage.removeChild(_this.bitmap);
+                    _this.stage.containers[0].addChild(_this.bitmap);
                     _this.stage.parent.removeAllEventListeners();
                 }, 0);
                 
@@ -78,7 +80,7 @@ function Card(image,plant,plantbitmap,price,CoolingTime){
             _this.hasCover = true;
             _this.cover.graphics.beginFill("#000").drawRect(_this.CardBitmap.x,_this.CardBitmap.y,50,70);
             _this.cover.alpha = 0.5;
-            _this.stage.addChild(_this.cover);
+            _this.stage.containers[0].addChild(_this.cover);
         }
         if(!_this.sunEnough){
             _this.cover.visible = true;
@@ -96,7 +98,7 @@ function Card(image,plant,plantbitmap,price,CoolingTime){
             var temp =  new createjs.Shape();  
             temp.graphics.beginFill("#000").drawRect(_this.CardBitmap.x,_this.CardBitmap.y,50,70);
             temp.alpha = 0.4;
-            _this.stage.addChild(temp);
+            _this.stage.containers[0].addChild(temp);
             _this.stage.addChild(_this.virtual);
             _this.stage.parent.addEventListener("stagemousemove",(e)=>{
                 _this.PlantBitmap.x = e.stageX-_this.Plant.width/2;
@@ -127,9 +129,8 @@ function Card(image,plant,plantbitmap,price,CoolingTime){
                     _this.stage.gameMap[line][plantId].plant.line = line;
                     _this.stage.gameMap[line][plantId].plant.auto();
                     _this.stage.gameMap[line][plantId].hasPlant = true;
-                    _this.stage.addChild(_this.stage.gameMap[line][plantId].plant.shadow,_this.stage.gameMap[line][plantId].plant.sprite);
-                    _this.stage.setChildIndex(_this.stage.gameMap[line][plantId].plant.shadow,1);
-                    _this.stage.setChildIndex(_this.stage.gameMap[line][plantId].plant.sprite,2);
+                    _this.stage.containers[line+1].addChild(_this.stage.gameMap[line][plantId].plant.shadow,_this.stage.gameMap[line][plantId].plant.sprite);
+                    _this.virtual.alpha = 0;
                     _this.stage.removeChild(_this.virtual,_this.PlantBitmap);
                     _this.stage.sun -= _this.price;
                     _this.Cooling(temp);
@@ -137,24 +138,26 @@ function Card(image,plant,plantbitmap,price,CoolingTime){
                     _this.stage.ClickEnable = true;
                 }
                     if(_this.CardBitmap.hitArea.hitTest(event.stageX-_this.CardBitmap.x,event.stageY-_this.CardBitmap.y)){
+                        _this.virtual.alpha = 0;
                         _this.stage.removeChild(_this.virtual,_this.PlantBitmap);
                         _this.ClickEnable = false;
-                        _this.stage.removeChild(temp);
+                        _this.stage.containers[0].removeChild(temp);
                         _this.stage.parent.removeAllEventListeners();
                         _this.stage.ClickEnable = true;
                     }
                 })
         }
     })
+
     this.Cooling = function(temp){
-        _this.ClickEnable = false;
-        _this.coolComplete = false;
-        createjs.Tween.get(temp).to({scaleY:0,y:_this.CardBitmap.y+1},_this.CoolingTime);
+        this.ClickEnable = false;
+        this.coolComplete = false;
+        createjs.Tween.get(temp).to({scaleY:0,y:this.CardBitmap.y+1},this.CoolingTime);
         setTimeout(()=>{
-            _this.coolComplete = true;
-            _this.ClickEnable = true;
-            _this.stage.removeChild(temp);
-        },_this.CoolingTime)
+            this.coolComplete = true;
+            this.ClickEnable = true;
+            this.stage.containers[0].removeChild(temp);
+        },this.CoolingTime)
     }
 }
 

@@ -11,7 +11,6 @@ function Plant(images,height,width,count,actions,life){
     });
     this.sprite =  new createjs.Sprite(plantSprite,"move");
     this.shadow = new createjs.Bitmap("image/Plants/plantshadow.png");
-    let _this = this;
     this.offsetX = 0;
     this.offsetY = 0;
     this.ShadowX = 0;
@@ -19,13 +18,15 @@ function Plant(images,height,width,count,actions,life){
     this.life =  life;
     this.line = 0;
     this.init = function(x,y,stage){
-        _this.sprite.x = x+_this.offsetX;
-        _this.sprite.y = y+_this.offsetY;
-        _this.stage = stage;
-        _this.shadow.x = x-_this.ShadowX;
-        _this.shadow.y = y-_this.ShadowY+_this.height;
+        this.sprite.x = x+this.offsetX;
+        this.sprite.y = y+this.offsetY;
+        this.stage = stage;
+        this.shadow.x = x-this.ShadowX;
+        this.shadow.y = y-this.ShadowY+this.height;
     }
 }
+
+
 function Sunflower(){
     this.plant = Plant;
     var src = ["image/Plants/Sunflower/Sunflower.png"];
@@ -38,30 +39,29 @@ function Sunflower(){
     this.ShadowY = 25;
     this.timer = null;
     this.ProduceTime = Math.ceil(Math.random()*5)+5;//第一次5～10秒，之后每个23~25秒
-    let _this = this;
     this.auto = function(){
-            timer = setTimeout(()=>{
+            this.timer = setTimeout(()=>{
                 var sunlight = new SunLight();
-                sunlight.init(_this.sprite.x+10,_this.sprite.y+10,_this.stage);
+                sunlight.init(this.sprite.x+10,this.sprite.y+10,this.stage);
                 sunlight.auto();
-                var RX = Math.ceil(Math.random()*_this.width) - _this.width;
+                var RX = Math.ceil(Math.random()*this.width) - this.width;
                 var RY = Math.ceil(Math.random()*80) + 30;
                 sunlight.sprite.scaleX = 0.3;
                 sunlight.sprite.scaleY = 0.3;
-                _this.sprite.gotoAndPlay("shine");
+                this.sprite.gotoAndPlay("shine");
                 setTimeout(()=>{
-                    _this.sprite.gotoAndPlay("move");
+                    this.sprite.gotoAndPlay("move");
                 },1000)
                 setTimeout(()=>{
-                    _this.stage.addChild(sunlight.sprite);
-                    createjs.Tween.get(sunlight.sprite).to({scaleX:1,scaleY:1,x:_this.sprite.x+RX/4,y:_this.sprite.y-RY},400).to({x:_this.sprite.x+RX/2,y:_this.sprite.y+17},400);  
+                    this.stage.containers[6].addChild(sunlight.sprite);
+                    createjs.Tween.get(sunlight.sprite).to({scaleX:1,scaleY:1,x:this.sprite.x+RX/4,y:this.sprite.y-RY},400).to({x:this.sprite.x+RX/2,y:this.sprite.y+17},400);  
                 },800)
-                _this.ProduceTime = Math.ceil(Math.random()*2)+23;
-                _this.auto();
-            },_this.ProduceTime*1000);
+                this.ProduceTime = Math.ceil(Math.random()*2)+23;
+                this.auto();
+            },this.ProduceTime*1000);
         }
     this.stop = function(){
-        clearTimeout(_this.timer);
+        clearTimeout(this.timer);
     }
 }
 function Peashooter(){
@@ -78,41 +78,40 @@ function Peashooter(){
     this.ShadowY = 30;
     var isShooting = false;
     var ShootComplete = true;
-    let _this = this;
     this.timer1 = null;
     this.timer2 = null;
     this.auto = function(){
-        _this.timer1 = setInterval(() => {
+        this.timer1 = setInterval(() => {
             var hasZombie = false;
-            for(var i=0;i<_this.stage.ZombieList.length;i++){
-                if(_this.stage.ZombieList[i].line != _this.line||_this.stage.ZombieList[i].life<=0)continue;
-                if(_this.sprite.x<=_this.stage.ZombieList[i].sprite.x+_this.stage.ZombieList[i].hitX&&_this.stage.ZombieList[i].sprite.x+_this.stage.ZombieList[i].hitX<=750){
+            for(var i=0;i<this.stage.ZombieList.length;i++){
+                if(this.stage.ZombieList[i].line != this.line||!this.stage.ZombieList[i].isLive)continue;
+                if(this.sprite.x<=this.stage.ZombieList[i].sprite.x+this.stage.ZombieList[i].hitX&&this.stage.ZombieList[i].sprite.x+this.stage.ZombieList[i].hitX<=750){
                     hasZombie = true;
                 }
             } 
             if(hasZombie&&!isShooting){
-                _this.sprite.gotoAndPlay("shoot");
+                this.sprite.gotoAndPlay("shoot");
                 isShooting = true;
             }
             if(isShooting&&ShootComplete){
                 ShootComplete = false;
-                _this.timer2 = setTimeout(() => {
-                    var bullet = new PeaBullet(_this.sprite.x+_this.width,_this.sprite.y+15,_this.stage,_this.line);
-                    _this.stage.addChild(bullet.bitmap);
+                this.timer2 = setTimeout(() => {
+                    var bullet = new PeaBullet(this.sprite.x+this.width,this.sprite.y+15,this.stage,this.line);
+                    this.stage.containers[this.line+1].addChild(bullet.bitmap);
                     ShootComplete = true;
                 }, 1400);
             }
             if(!hasZombie&&isShooting){
                 isShooting = false;
                 ShootComplete = true;
-                _this.sprite.gotoAndPlay("move");
-                clearTimeout(_this.timer2);
+                this.sprite.gotoAndPlay("move");
+                clearTimeout(this.timer2);
             }
         }, 100);
     }
     this.stop = function(){
-        clearInterval(_this.timer1);
-        clearTimeout(_this.timer2)
+        clearInterval(this.timer1);
+        clearTimeout(this.timer2)
     }
 }
 
@@ -128,19 +127,18 @@ function SunLight(){
     suncircle.graphics.beginFill("#000").drawRect(0,0,79,79);
     this.sprite.hitArea = suncircle;
     this.Isclick= false;
-    let _this = this;
     this.auto = function(){
         setTimeout(() => {
-            if(!_this.Isclick) _this.stage.removeChild(_this.sprite);
+            if(!this.Isclick) this.stage.containers[6].removeChild(this.sprite);
         }, 8000);
     }
     this.sprite.addEventListener("click",()=>{
-        if(_this.stage.ClickEnable){
-            _this.Isclick = true;
-            createjs.Tween.get(_this.sprite).to({x:0,y:0},600);
+        if(this.stage.ClickEnable){
+            this.Isclick = true;
+            createjs.Tween.get(this.sprite).to({x:0,y:0},600);
             setTimeout(()=>{
-                _this.stage.sun+=25;
-                _this.stage.removeChild(_this.sprite);
+                this.stage.sun+=25;
+                this.stage.containers[6].removeChild(this.sprite);
             },600);
         }
     })

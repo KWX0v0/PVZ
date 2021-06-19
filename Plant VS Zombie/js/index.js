@@ -11,18 +11,22 @@ function Index(){
     var Btn1 = new createjs.Bitmap("image/index/SelectorScreen_StartAdventure_Button1.png");
     Btn1.x = 420;
     Btn1.y = 50;
+    Btn1.id = 1;
     BtnArr.push(Btn1);
     var Btn2 = new createjs.Bitmap("image/index/SelectorScreen_Survival_button.png");
     Btn2.x = 420;
     Btn2.y = 160;
+    Btn2.id = 2;
     BtnArr.push(Btn2);
     var Btn3 = new createjs.Bitmap("image/index/SelectorScreen_Challenges_button.png");
     Btn3.x = 420;
     Btn3.y = 250;
+    Btn3.id = 3;
     BtnArr.push(Btn3);
     var Btn4 = new createjs.Bitmap("image/index/SelectorScreen_Vasebreaker_button.png");
     Btn4.x = 420;
     Btn4.y = 330;
+    Btn4.id = 4;
     BtnArr.push(Btn4);
     var ZombieHandss = new createjs.SpriteSheet({
         images:["image/index/ZombieHand.png"],
@@ -39,17 +43,19 @@ function Index(){
     ZombieHand.x = 10;
     ZombieHand.y = 3;
     this.addChild(background,NameLabel,saveLabel);
-    let _this = this;
+    
     for(var i=0;i<BtnArr.length;i++){
         var temp = new createjs.Shape();
         temp.graphics.beginFill("#000").drawRect(0,15,290,100);
         BtnArr[i].hitArea = temp;
         BtnArr[i].addEventListener("click",(e)=>{
-            if(_this.clickEnable) Btnclick(e.target.id-5);
+            if(this.clickEnable) Btnclick(e.target.id);
         })
-        _this.addChild(BtnArr[i]);
+        this.addChild(BtnArr[i]);
     }
     this.addChild(ZombieHand);
+    
+    let _this = this;
     function Btnclick(i){
         _this.select = i;
         switch(i){
