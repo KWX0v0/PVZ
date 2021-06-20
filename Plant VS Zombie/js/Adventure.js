@@ -65,6 +65,7 @@ function Adventure(){
         sunNum = new createjs.Text(_this.sun, "20px Arial", "#000");
         sunNum.x = 34;
         sunNum.y = 63;
+        
         _this.containers[0].addChild(seedBank,sunNum);
         //卡片之间间距为5 卡片宽为50 字体大小11
         let sunflowerCard = new SunflowerCard(83,8,_this);
@@ -88,12 +89,21 @@ function Adventure(){
         prepare.x = 280;
         prepare.y = 250;
         _this.containers[6].addChild(prepare);
-        
+        let process = new createjs.Bitmap("image/adventure/FlagMeterFull.png");
+        process.x = _this.parent.canvas.width - 157;
+        process.y = _this.parent.canvas.height - 21;
+        let processTitle = new createjs.Bitmap("image/adventure/FlagMeterLevelProgress.png");
+        processTitle.x = process.x + 35;
+        processTitle.y = process.y - 11;
+        let processCover = new createjs.Shape();
+        processCover.graphics.beginFill("#000").drawRect(_this.parent.canvas.width-151,_this.parent.canvas.height-15,145,9);
         allCheck();
         setTimeout(()=>{
             _this.ClickEnable = true;
             _this.containers[6].removeChild(prepare)
             _this.containers[0].addChild(shovelBank,shovel.bitmap);
+            _this.containers[7].addChild(process,processTitle,processCover);
+            createjs.Tween.get(processCover.graphics.command).to({w:0},300000)
             DropSunlight();
             setTimeout(() => {
                 ZombieComing();
@@ -146,22 +156,24 @@ function Adventure(){
     }
 
 
-    let comingTime = 10;
-    let zombiecount = 1;
+    var comingTime = 10;
+    var waves = 0;
+    var zombiecount = 1;
     function ZombieComing(){
         _this.zombieTimer = setTimeout(() => {
             for(let i=0;i<zombiecount;i++){
                 let zombie = new normalZombie();
-                let line = (Math.ceil(Math.random()*i)+100)%5;
-                let ZX = (Math.ceil(Math.random()*3)+2)*30+800; 
+                let line = (Math.ceil(Math.random()*(50+i))+100)%5;
+                let ZX = (Math.ceil(Math.random()*3)+i)*50+800; 
                 zombie.init(ZX,line,_this);
                 zombie.type = Math.ceil(Math.random()*2);
                 _this.ZombieList.push(zombie);
                 _this.ZombieList[_this.ZombieList.length-1].auto();
                 _this.containers[line+1].addChild(_this.ZombieList[_this.ZombieList.length-1].sprite);
             }
-            comingTime = Math.ceil(Math.random()*10)+30;
-            zombiecount = Math.ceil(Math.random()*8)+2;
+            waves++;
+            comingTime =  waves>=3?Math.ceil(Math.random()*10)+30:40;
+            zombiecount = waves>=3?Math.ceil(Math.random()*5)+3:Math.ceil(Math.random()*4)+1;
             ZombieComing();
         },comingTime*1000);
     }

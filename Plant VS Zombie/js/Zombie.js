@@ -49,13 +49,16 @@ function normalZombie(){
                 dropHead = true;
                 if(!this.IsEating) this.sprite.gotoAndPlay("NH-move"+this.type);
                 else this.sprite.gotoAndPlay("NH-eat");
-                // let head = new createjs.Bitmap("image/Zombie/NormalZombie/ZombieHead.png");
-                // head.x = 400;
-                // head.y = 300;
-                // head.regX = 25;
-                // head.regY = 25;
-                // this.addChild(head);
-                // createjs.Tween.get(head).to({rotation:80,x:420,y:270},300).to({rotation:180,x:430,y:400},200);
+                let head = new createjs.Bitmap("image/Zombie/NormalZombie/ZombieHead.png");
+                head.x = this.sprite.x+this.hitX;
+                head.y = this.sprite.y;
+                head.regX = 25;
+                head.regY = 25;
+                this.stage.containers[this.line+1].addChild(head);
+                createjs.Tween.get(head).to({rotation:80,x:this.sprite.x+this.hitX+20,y:this.sprite.y-30},300).to({rotation:180,x:this.sprite.x+this.hitX+30,y:this.sprite.y+100},200);
+                setTimeout(()=>{
+                    this.stage.containers[this.line+1].removeChild(head);
+                },1300)
             }
             var plantId = -1;
             for(var i=0;i<this.stage.gameMap[this.line].length;i++){

@@ -16,9 +16,16 @@ function PeaBullet(x,y,stage,line){
         }
         if(isHit){
             isHit = false;
+            let hitResult = new createjs.Bitmap("image/Bullet/PeaBulletHit.gif");
+            hitResult.x = this.stage.ZombieList[target].sprite.x+this.stage.ZombieList[target].hitX-10;
+            hitResult.y = this.bitmap.y;
+            this.stage.containers[line+1].addChild(hitResult);
             this.stage.ZombieList[target].sprite.alpha = 0.85;
             setTimeout(() => {
-                if(this.stage.ZombieList[target]) this.stage.ZombieList[target].sprite.alpha = 1; 
+                this.stage.containers[line+1].removeChild(hitResult);
+                if(this.stage.ZombieList[target]) { 
+                    this.stage.ZombieList[target].sprite.alpha = 1; 
+                }
             }, 300);
             this.stage.ZombieList[target].life -= 20;
             this.stage.containers[line+1].removeChild(this.bitmap);
